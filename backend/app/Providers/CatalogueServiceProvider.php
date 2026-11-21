@@ -7,6 +7,7 @@ use App\DTOs\CatalogueSettings;
 use App\Infrastructure\Products\CachingProductProvider;
 use App\Infrastructure\Products\FakeStoreMapper;
 use App\Infrastructure\Products\FakeStoreProvider;
+use App\Infrastructure\Products\JsonCatalogueProvider;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\ServiceProvider;
@@ -28,6 +29,11 @@ class CatalogueServiceProvider extends ServiceProvider
 
         $this->app->singleton(ProductProviderInterface::class, function ($app): ProductProviderInterface {
             $name = (string) config('catalogue.provider');
+
+            // A file we own, read in-process: nothing to cache, and edits to the file show up immediately.
+            if ($name === 'local') {
+                return new JsonCatalogueProvider((string) config('catalogue.local.path'));
+            }
 
             $source = match ($name) {
                 'fakestore' => new FakeStoreProvider(

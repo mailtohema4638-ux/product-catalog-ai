@@ -4,8 +4,13 @@
 $list = fn (string $value): array => array_values(array_filter(array_map('trim', explode(',', $value)), fn (string $v): bool => $v !== ''));
 
 return [
-    // Which ProductProviderInterface implementation to use. See CatalogueServiceProvider.
-    'provider' => env('CATALOGUE_PROVIDER', 'fakestore'),
+    // Which ProductProviderInterface implementation to use: "local" (our own catalogue file) or
+    // "fakestore" (the public Fake Store API). See CatalogueServiceProvider.
+    'provider' => env('CATALOGUE_PROVIDER', 'local'),
+
+    'local' => [
+        'path' => env('CATALOGUE_FILE', resource_path('catalogue/products.json')),
+    ],
 
     // Curated, ordered source product IDs shown as "top rated" on the home page.
     'featured_product_ids' => $list((string) env('FEATURED_PRODUCT_IDS', '')),

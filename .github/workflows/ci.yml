@@ -51,8 +51,8 @@ jobs:
       - name: Dependency audit
         run: npm audit --omit=dev --audit-level=high
 
-  # Builds the real images and exercises the stack end to end: gateway, SPA, API, live product
-  # source, enquiry and the email arriving in Mailpit. Needs outbound access to fakestoreapi.com.
+  # Builds the real images and exercises the stack end to end: gateway, SPA, API, product catalogue,
+  # enquiry and the email arriving in Mailpit. The default catalogue is a bundled file, so no outbound access is needed.
   docker-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -69,15 +69,18 @@ jobs:
           echo "SPA is served";           curl "$base/" | grep -q "Product Catalogue"
           echo "API health via gateway";  curl "$base/api/v1/health" | jq -e '.data.status == "ok"'
           echo "Home: 5 featured";        curl "$base/api/v1/featured" | jq -e '.data | length == 5'
-          echo "Search";                  curl "$base/api/v1/products?q=gold" | jq -e '.data | length > 0'
-          echo "Unknown product is 404";  test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/api/v1/products/999999")" = 404
-          echo "Client-side route falls back to the SPA"; curl "$base/products/12" | grep -q "Product Catalogue"
+          echo "Four categories";         curl "$base/api/v1/categories" | jq -e '.data | length == 4'
+          echo "Category page: top rated then more"; curl "$base/api/v1/categories/office-furniture" | jq -e '(.data.top_rated | length == 3) and (.data.others | length > 0)'
+          echo "Product image is served";  test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/images/categories/tech-electronics.svg")" = 200
+          echo "Search";                  curl "$base/api/v1/products?q=pens" | jq -e '.data | length == 2'
+          echo "Unknown product is 404";  test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/api/v1/products/no-such-product")" = 404
+          echo "Client-side route falls back to the SPA"; curl "$base/products/a4-copy-paper-500" | grep -q "Product Catalogue"
           echo "Internal front controller is not exposed"; test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/index.php")" != 200
           echo "Security headers";        command curl -sI "$base/" | grep -qi '^content-security-policy:'
 
           echo "Enquiry is accepted"
           curl -X POST "$base/api/v1/enquiries" -H 'Content-Type: application/json' \
-            -d '{"product_id":"12","name":"CI Bot","email":"ci@example.com","message":"smoke test"}' \
+            -d '{"product_id":"ergonomic-mesh-office-chair","name":"CI Bot","email":"ci@example.com","message":"smoke test"}' \
             | jq -e '.data.reference | length > 0'
 
           echo "Sales email arrives in Mailpit"

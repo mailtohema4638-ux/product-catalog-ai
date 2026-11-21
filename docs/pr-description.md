@@ -3,6 +3,8 @@
 ## What this is
 A product catalogue where customers browse, search and submit an enquiry, and the sales team receives it by email. It meets the five acceptance criteria (home, category, search, product page, enquiry) and is deliberately built as a **foundation**: the product data source, email provider and look and feel are each behind a seam so they can change without a rewrite.
 
+The default catalogue is a bundled file of sample office products in four categories (Office Supplies & Stationery, Tech & Electronics, Office Furniture, Print & Photo Services). The Fake Store API is still available as an alternative provider (`CATALOGUE_PROVIDER=fakestore`), which is the swap the brief anticipates.
+
 - **Backend:** Laravel 13 (PHP) JSON API under `/api/v1`
 - **Client:** React + TypeScript (Vite)
 - **Run:** `docker compose up --build`, then http://localhost:8080 (sales inbox in Mailpit at http://localhost:8025)
@@ -16,7 +18,7 @@ A product catalogue where customers browse, search and submit an enquiry, and th
 6. [AI_USAGE.md](AI_USAGE.md): how AI was directed and where it was wrong.
 
 ## Design in one paragraph
-Controllers are thin; business rules live in services that depend on two contracts (`ProductProviderInterface`, `EmailProviderInterface`). The Fake Store specifics (including its quirks: no search endpoint, HTTP 200 with an empty body for unknown ids, float prices, a misspelt category) are contained in one provider and mapper. A caching decorator adds stale-if-error so a flaky free API does not take the demo down. The enquiry is **saved before any email is attempted** and the email is sent after the response, so a mail outage never loses a lead or shows the customer an error. Layer rules are enforced by architecture tests.
+Controllers are thin; business rules live in services that depend on two contracts (`ProductProviderInterface`, `EmailProviderInterface`). Each source's specifics are contained in its own provider: the default `JsonCatalogueProvider` (strictly validated, offline) and the optional `FakeStoreProvider` (including its quirks: no search endpoint, HTTP 200 with an empty body for unknown ids, float prices). A caching decorator adds stale-if-error for remote sources so a flaky free API cannot take the demo down. The enquiry is **saved before any email is attempted** and the email is sent after the response, so a mail outage never loses a lead or shows the customer an error. Layer rules are enforced by architecture tests.
 
 ## Assumptions and cuts (full list in DECISIONS.md)
 - "Top rated" on the home page is a **curated list** (config); on category pages it is **computed** (rating, then review count).
@@ -27,7 +29,7 @@ Controllers are thin; business rules live in services that depend on two contrac
 ## Evidence it works
 | Check | Result |
 |---|---|
-| Backend tests (Pest) | 179 passing: unit, feature, contract (3 product + 2 email implementations), architecture |
+| Backend tests (Pest) | 221 passing: unit, feature, contract (4 product + 2 email implementations), architecture |
 | Frontend tests (Vitest + MSW) | 71 passing; any unmocked network request fails the test |
 | Static analysis | Pint, Larastan level 6, oxlint, `tsc`: clean |
 | Dependency audits | `composer audit`, `npm audit`: no advisories |
@@ -40,7 +42,7 @@ Controllers are thin; business rules live in services that depend on two contrac
 ## Known limitations (honest list)
 - **Docker was not available on my build machine.** The Dockerfiles, nginx config and compose file were reviewed by reading, and are exercised by the `docker-smoke` CI job. Please run `docker compose up --build` to confirm locally.
 - Mailpit was blocked by my network; real SMTP delivery was verified with a throwaway receiver instead.
-- The product source is a free public API (cached with stale-if-error after first load).
+- The catalogue is sample data and the images are category illustrations, not product photos. (The optional Fake Store provider depends on a free public API, cached with stale-if-error.)
 - SQLite suits a single API container; enquiries have no retention policy yet.
 - Accessibility is designed in and tested by attributes, not audited with assistive technology.
 
@@ -48,7 +50,7 @@ Controllers are thin; business rules live in services that depend on two contrac
 Built with GitHub Copilot (GPT-6.1 for planning, Claude Sonnet 5.5 for the build) under committed instructions ([AGENTS.md](AGENTS.md)) and a written spec ([docs/spec.md](docs/spec.md)). I reviewed the output, verified behaviour against the real systems rather than trusting green tests, and documented 20 places the AI was wrong and how each was caught in [AI_USAGE.md](AI_USAGE.md).
 
 ## Time spent
-About 2 h 45 min, over the 2–3 hour guideline (planning ~15 min, building ~75, testing and verification ~45, review and docs ~30). Breakdown in the README.
+About 3 hours, at the top of the 2–3 hour guideline (planning ~15 min, building ~90, testing and verification ~45, review and docs ~30). Breakdown in the README.
 
 ## Checklist
 - [x] Acceptance criteria 1–5 met and verified end to end

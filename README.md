@@ -5,7 +5,7 @@ A small product catalogue: customers browse, search and enquire about products; 
 | Criterion from the brief | Where to look |
 |---|---|
 | Home: the 5 chosen top-rated products | `/` |
-| Category: top-rated products, then the rest | `/categories/mens-clothing` |
+| Category: top-rated products, then the rest | `/categories/office-furniture` |
 | Search: only matching products | search box in the header |
 | Product page | click any product tile |
 | Enquiry: sales inbox gets an email, customer sees "Thank you" | **Enquire** on a product page, then Mailpit at http://localhost:8025 |
@@ -17,7 +17,7 @@ A small product catalogue: customers browse, search and enquire about products; 
 | Client | **React + TypeScript** (Vite) | Component model suits a storefront that will be re-skinned; TypeScript types the API contract. |
 | Local infra | **Docker Compose**: nginx gateway, php-fpm, Mailpit | One command, one origin (no CORS), and a visible sales inbox with no account. Everything is containerised and 12-factor, so it maps to AWS (ECS Fargate, S3 + CloudFront, SES, RDS, ElastiCache). |
 
-The browser never calls the Fake Store API: all product data goes through the backend.
+The browser never calls any third-party data source: all product data goes through the backend.
 
 ## Run it
 Requires Docker with Compose v2.24 or newer.
@@ -32,7 +32,7 @@ docker compose up --build
 | Mailpit (the sales inbox) | http://localhost:8025 |
 | API health | http://localhost:8080/api/v1/health |
 
-No account or secret is needed. An ephemeral `APP_KEY` is generated when the API container starts. The product source (fakestoreapi.com) is a free public API, so the machine needs outbound internet access.
+No account or secret is needed, and no outbound internet access: the default catalogue is a bundled file. An ephemeral `APP_KEY` is generated when the API container starts.
 
 To change ports, the featured products or the sales address, copy `.env.example` to `.env` and edit it.
 
@@ -47,18 +47,24 @@ cd frontend && npm install && npm run dev                                       
 ```
 In this mode set `EMAIL_PROVIDER=mock` in `backend/.env` (or point `MAIL_HOST` at any SMTP server).
 
+## The catalogue
+Products live in [`backend/resources/catalogue/products.json`](backend/resources/catalogue/products.json) in four categories: Office Supplies & Stationery, Tech & Electronics, Office Furniture, and Print & Photo Services. Product names, descriptions and prices are illustrative sample data. Category images are served by the frontend from `frontend/public/images/categories/`.
+
+To add or change a product, edit that file (prices are integer cents). The file is validated strictly on load, and a test checks that every image exists and that the default featured products are in the catalogue. To use the public Fake Store API instead, set `CATALOGUE_PROVIDER=fakestore`; nothing else changes, which is the point of the provider seam.
+
 ## Configuration
 All configuration is environment-driven. Defaults live in [`backend/.env.example`](backend/.env.example); nothing secret is required.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `CATALOGUE_PROVIDER` | `fakestore` | Product data source (`ProductProviderInterface` implementation) |
-| `FEATURED_PRODUCT_IDS` | `12,11,3,18,5` | The curated "top rated" products on the home page, in order |
+| `CATALOGUE_PROVIDER` | `local` | Product data source (`ProductProviderInterface` implementation): `local` (bundled catalogue file) or `fakestore` (public Fake Store API) |
+| `CATALOGUE_FILE` | `resources/catalogue/products.json` | Catalogue file read by the `local` provider |
+| `FEATURED_PRODUCT_IDS` | five ids from the bundled catalogue | The curated "top rated" products on the home page, in order |
 | `CATEGORY_TOP_RATED_COUNT` | `3` | How many top-rated products lead a category page |
 | `EMAIL_PROVIDER` | `mail` | `mail` (Laravel mailer, transport via `MAIL_MAILER`) or `mock` (records only) |
 | `SALES_INBOX_ADDRESS` | `sales@catalogue.test` | Where enquiries are emailed (never taken from a request) |
-| `CATALOGUE_CACHE_TTL_SECONDS` / `CATALOGUE_STALE_TTL_SECONDS` | `600` / `86400` | Fresh and stale-if-error cache lifetimes |
-| `FAKESTORE_TIMEOUT_SECONDS` / `FAKESTORE_RETRIES` | `4` / `1` | Upstream budget (about 8 s worst case) |
+| `CATALOGUE_CACHE_TTL_SECONDS` / `CATALOGUE_STALE_TTL_SECONDS` | `600` / `86400` | Fresh and stale-if-error cache lifetimes (used for remote sources such as `fakestore`) |
+| `FAKESTORE_TIMEOUT_SECONDS` / `FAKESTORE_RETRIES` | `4` / `1` | Only when `CATALOGUE_PROVIDER=fakestore`: upstream budget (about 8 s worst case) |
 | `TRUSTED_PROXIES` | empty (`*` in Compose) | Proxies allowed to set `X-Forwarded-*` |
 | `CORS_ALLOWED_ORIGINS` | empty | Cross-origin access is off by default |
 
@@ -87,7 +93,7 @@ docker compose exec api php artisan enquiries:resend-failed
 cd backend  && vendor/bin/pest && vendor/bin/pint --test && vendor/bin/phpstan analyse
 cd frontend && npm test && npm run lint && npm run typecheck && npm run build
 ```
-At the time of writing: 179 backend and 71 frontend tests. They cover the acceptance criteria, provider contracts (every product and email implementation runs the same suite), error paths, abuse protection, durability when email fails, and the architectural layer rules. CI (`.github/workflows/ci.yml`) also runs dependency audits and a `docker-smoke` job that builds the images and exercises the whole stack, including the email arriving in Mailpit (defined, but not yet run when this was written).
+At the time of writing: 221 backend and 71 frontend tests. They cover the acceptance criteria, provider contracts (every product and email implementation runs the same suite), error paths, abuse protection, durability when email fails, and the architectural layer rules. CI (`.github/workflows/ci.yml`) also runs dependency audits and a `docker-smoke` job that builds the images and exercises the whole stack, including the email arriving in Mailpit (defined, but not yet run when this was written).
 
 ## Assumptions, cuts and decisions
 The acceptance criteria leave gaps on purpose. Every assumption (for example, "top rated" means a curated list on the home page and a computed ranking on category pages), every requirement I simplified or dropped, the trade-offs, and what I would do next are in **[DECISIONS.md](DECISIONS.md)**.
@@ -116,10 +122,10 @@ Approximate, AI-assisted, wall-clock. This is over the 2–3 hour guideline.
 | Activity | Time |
 |---|---|
 | Planning (reading the brief, architecture, assumptions, spec) | ~15 min |
-| Building (scaffolding, backend, frontend, Docker, CI) | ~75 min |
+| Building (scaffolding, backend, frontend, Docker, CI, the office catalogue) | ~90 min |
 | Testing and verification (tests, mutation checks, live runs through a browser and real SMTP) | ~45 min |
 | Reviewing and documentation (independent code review, fixes, docs) | ~30 min |
-| **Total** | **~2 h 45 min** |
+| **Total** | **~3 h** |
 
 ## Known limitations
-Summarised here, detailed in [DECISIONS.md](DECISIONS.md): Docker was not available on my build machine, so the stack is covered by a CI smoke job (defined, not yet run) rather than verified locally; the product source is a free public API; SQLite suits a single API container only; enquiries have no retention policy yet.
+Summarised here, detailed in [DECISIONS.md](DECISIONS.md): Docker was not available on my build machine, so the stack is covered by a CI smoke job (defined, not yet run) rather than verified locally; the sample catalogue is illustrative; SQLite suits a single API container only; enquiries have no retention policy yet.

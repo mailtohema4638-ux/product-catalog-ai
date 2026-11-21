@@ -33,6 +33,8 @@ Within phases I steered by correcting: for example, insisting on checking the li
 8. **Static analysis as a second opinion.** Adding Larastan (level 6) flagged `env()` in `bootstrap/app.php`: it returns null once config is cached, which would have silently disabled trusted-proxy handling (and made per-IP throttling treat every user as one). Fixed at the cause (moved to config + service provider) with tests, not suppressed.
 9. **A clean-clone run.** Cloning the committed branch into an empty folder and installing from lockfiles proves nothing depends on files only on my machine.
 
+10. **A late requirement change as a test of the design.** Near the end I changed the product source: show an office-supplies catalogue (four named categories) instead of Fake Store. The change touched the provider layer (a new `JsonCatalogueProvider`), configuration, data and tests, and **no service, controller or UI code**, which is the evidence the seam is real. The new provider joined the same contract suite (so it had to behave exactly like the others), its data got strict validation plus integrity tests (images exist, featured ids exist), and I re-ran the real stack in a browser. Fake Store stays one config switch away.
+
 ## Where the AI got something wrong (and how it was caught)
 | # | Issue | How caught | Fix |
 |---|---|---|---|

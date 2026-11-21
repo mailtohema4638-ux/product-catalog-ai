@@ -1,0 +1,581 @@
+{
+  "categories": [
+    {
+      "slug": "office-supplies-stationery",
+      "name": "Office Supplies & Stationery"
+    },
+    {
+      "slug": "tech-electronics",
+      "name": "Tech & Electronics"
+    },
+    {
+      "slug": "office-furniture",
+      "name": "Office Furniture"
+    },
+    {
+      "slug": "print-photo-services",
+      "name": "Print & Photo Services"
+    }
+  ],
+  "products": [
+    {
+      "id": "ballpoint-pens-blue-12pk",
+      "title": "Ballpoint Pens, Blue (12 Pack)",
+      "description": "Smooth-writing everyday ballpoint pens with a medium 1.0 mm tip.",
+      "price_minor": 599,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 812
+      }
+    },
+    {
+      "id": "gel-pens-assorted-10pk",
+      "title": "Gel Pens, Assorted Colours (10 Pack)",
+      "description": "Quick-drying gel ink in ten colours, ideal for notes, planners and journaling.",
+      "price_minor": 899,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.7,
+        "count": 540
+      }
+    },
+    {
+      "id": "hb-pencils-24pk",
+      "title": "HB Pencils (24 Pack)",
+      "description": "Pre-sharpened HB pencils with latex-free erasers for school and the office.",
+      "price_minor": 749,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.4,
+        "count": 390
+      }
+    },
+    {
+      "id": "permanent-markers-8pk",
+      "title": "Permanent Markers, Assorted (8 Pack)",
+      "description": "Fast-drying permanent markers that write on paper, plastic, glass and metal.",
+      "price_minor": 1049,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 221
+      }
+    },
+    {
+      "id": "whiteboard-markers-4pk",
+      "title": "Whiteboard Markers, Chisel Tip (4 Pack)",
+      "description": "Low-odour dry-erase markers that wipe cleanly from whiteboards.",
+      "price_minor": 699,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.2,
+        "count": 305
+      }
+    },
+    {
+      "id": "a4-spiral-notebook-200pg",
+      "title": "A4 Spiral Notebook, 200 Pages",
+      "description": "Ruled A4 notebook with a hard cover, perforated pages and a durable wire spine.",
+      "price_minor": 649,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.6,
+        "count": 677
+      }
+    },
+    {
+      "id": "a4-copy-paper-500",
+      "title": "A4 Copy Paper, 80gsm (500 Sheets)",
+      "description": "Bright white, jam-free multipurpose paper for printers, copiers and fax machines.",
+      "price_minor": 1299,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.8,
+        "count": 1450
+      }
+    },
+    {
+      "id": "lever-arch-folders-4pk",
+      "title": "Lever Arch Folders, A4 (4 Pack)",
+      "description": "Heavy-duty A4 lever arch folders with a thumb hole and a spine label.",
+      "price_minor": 2199,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.1,
+        "count": 188
+      }
+    },
+    {
+      "id": "ring-binders-a4-6pk",
+      "title": "Ring Binders, A4 (6 Pack)",
+      "description": "Two-ring A4 binders with a clear cover pocket for custom inserts.",
+      "price_minor": 1599,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4,
+        "count": 142
+      }
+    },
+    {
+      "id": "desktop-stapler-50sheet",
+      "title": "Desktop Stapler, 50 Sheet Capacity",
+      "description": "Sturdy metal stapler with a non-slip base and a built-in staple remover.",
+      "price_minor": 1299,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 266
+      }
+    },
+    {
+      "id": "whiteboard-magnets-12pk",
+      "title": "Whiteboard Magnets, Strong (12 Pack)",
+      "description": "High-strength round magnets for whiteboards, fridges and filing cabinets.",
+      "price_minor": 999,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 97
+      }
+    },
+    {
+      "id": "scientific-calculator-240",
+      "title": "Scientific Calculator, 240 Functions",
+      "description": "Two-line display with natural textbook entry, solar and battery powered.",
+      "price_minor": 2495,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.6,
+        "count": 413
+      }
+    },
+    {
+      "id": "desktop-calculator-12digit",
+      "title": "Desktop Calculator, 12 Digit",
+      "description": "Large-display desktop calculator with tax functions and a tilting screen.",
+      "price_minor": 1495,
+      "currency": "USD",
+      "category": "office-supplies-stationery",
+      "image": "/images/categories/office-supplies-stationery.svg",
+      "rating": {
+        "average": 4.2,
+        "count": 204
+      }
+    },
+    {
+      "id": "laptop-14-16gb-512",
+      "title": "14\" Laptop, 16GB RAM, 512GB SSD",
+      "description": "Slim, lightweight laptop with a full HD display and all-day battery life.",
+      "price_minor": 129900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 188
+      }
+    },
+    {
+      "id": "laptop-15-8gb-256",
+      "title": "15.6\" Everyday Laptop, 8GB RAM, 256GB SSD",
+      "description": "Reliable everyday laptop for browsing, documents and video calls.",
+      "price_minor": 79900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.1,
+        "count": 246
+      }
+    },
+    {
+      "id": "chromebook-11-touch",
+      "title": "11.6\" Touchscreen Chromebook",
+      "description": "Compact touchscreen Chromebook with fast start-up and a spill-resistant keyboard.",
+      "price_minor": 34900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 312
+      }
+    },
+    {
+      "id": "desktop-mini-pc-16gb",
+      "title": "Mini Desktop PC, 16GB RAM, 512GB SSD",
+      "description": "Space-saving desktop computer that mounts behind a monitor.",
+      "price_minor": 89900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.4,
+        "count": 97
+      }
+    },
+    {
+      "id": "monitor-24-fhd",
+      "title": "24\" Full HD Monitor",
+      "description": "IPS panel with thin bezels, HDMI and DisplayPort inputs and a tilt stand.",
+      "price_minor": 17900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.6,
+        "count": 702
+      }
+    },
+    {
+      "id": "monitor-27-qhd-usb-hub",
+      "title": "27\" QHD Monitor with USB Hub",
+      "description": "Sharp 2560x1440 display with a built-in USB hub and height-adjustable stand.",
+      "price_minor": 32900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.7,
+        "count": 330
+      }
+    },
+    {
+      "id": "laser-printer-mono-wifi",
+      "title": "Mono Laser Printer, Wi-Fi",
+      "description": "Fast, low-cost-per-page mono laser printing with automatic duplex.",
+      "price_minor": 22900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.2,
+        "count": 415
+      }
+    },
+    {
+      "id": "inkjet-all-in-one-wifi",
+      "title": "All-in-One Inkjet Printer, Wi-Fi",
+      "description": "Print, scan and copy from your phone or computer with refillable ink tanks.",
+      "price_minor": 14900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4,
+        "count": 588
+      }
+    },
+    {
+      "id": "wifi6-modem-router",
+      "title": "Wi-Fi 6 Modem Router",
+      "description": "Dual-band Wi-Fi 6 modem router with four gigabit ports and parental controls.",
+      "price_minor": 18900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 260
+      }
+    },
+    {
+      "id": "wireless-anc-headphones",
+      "title": "Wireless Noise-Cancelling Headphones",
+      "description": "Over-ear Bluetooth headphones with active noise cancelling and 30-hour battery.",
+      "price_minor": 24900,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.8,
+        "count": 902
+      }
+    },
+    {
+      "id": "usb-c-hub-7in1",
+      "title": "USB-C Hub, 7-in-1",
+      "description": "Adds HDMI, USB-A, SD card and power pass-through to any USB-C laptop.",
+      "price_minor": 4999,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.4,
+        "count": 523
+      }
+    },
+    {
+      "id": "wireless-keyboard-mouse-combo",
+      "title": "Wireless Keyboard and Mouse Combo",
+      "description": "Quiet full-size keyboard and comfortable mouse sharing one USB receiver.",
+      "price_minor": 5999,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 830
+      }
+    },
+    {
+      "id": "smart-wifi-plug-2pk",
+      "title": "Smart Wi-Fi Plug (2 Pack)",
+      "description": "Control lamps and appliances from your phone or with a voice assistant.",
+      "price_minor": 2499,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.2,
+        "count": 377
+      }
+    },
+    {
+      "id": "webcam-1080p-mic",
+      "title": "1080p Webcam with Microphone",
+      "description": "Full HD webcam with auto light correction and a privacy shutter.",
+      "price_minor": 6999,
+      "currency": "USD",
+      "category": "tech-electronics",
+      "image": "/images/categories/tech-electronics.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 640
+      }
+    },
+    {
+      "id": "ergonomic-mesh-office-chair",
+      "title": "Ergonomic Mesh Office Chair",
+      "description": "Breathable mesh back with adjustable lumbar support, armrests and seat height.",
+      "price_minor": 24900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.6,
+        "count": 612
+      }
+    },
+    {
+      "id": "executive-faux-leather-chair",
+      "title": "Executive Faux Leather Chair",
+      "description": "High-back padded chair with a tilt lock and a smooth-rolling base.",
+      "price_minor": 19900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.2,
+        "count": 288
+      }
+    },
+    {
+      "id": "height-adjustable-standing-desk",
+      "title": "Height-Adjustable Standing Desk, 140cm",
+      "description": "Electric sit-stand desk with memory presets and a sturdy dual-motor frame.",
+      "price_minor": 52900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.8,
+        "count": 402
+      }
+    },
+    {
+      "id": "home-office-desk-120",
+      "title": "Home Office Desk, 120cm",
+      "description": "Compact desk with a cable management hole and a scratch-resistant top.",
+      "price_minor": 18900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.4,
+        "count": 330
+      }
+    },
+    {
+      "id": "corner-workstation-shelves",
+      "title": "Corner Workstation Desk with Shelves",
+      "description": "L-shaped workstation with a built-in shelf unit for books and equipment.",
+      "price_minor": 27900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.1,
+        "count": 119
+      }
+    },
+    {
+      "id": "filing-cabinet-2-drawer",
+      "title": "Two-Drawer Filing Cabinet",
+      "description": "Lockable steel filing cabinet that fits A4 and foolscap hanging files.",
+      "price_minor": 14900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 174
+      }
+    },
+    {
+      "id": "bookcase-5-shelf",
+      "title": "Five-Shelf Bookcase",
+      "description": "Tall open bookcase with adjustable shelves and a wall-anchor kit.",
+      "price_minor": 12900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.2,
+        "count": 201
+      }
+    },
+    {
+      "id": "storage-cube-organiser-6",
+      "title": "Storage Cube Organiser, 6 Cube",
+      "description": "Modular cube shelf that works with fabric or wooden storage boxes.",
+      "price_minor": 8900,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4,
+        "count": 266
+      }
+    },
+    {
+      "id": "monitor-riser-storage",
+      "title": "Monitor Riser with Storage",
+      "description": "Raises your screen to eye level with a drawer for stationery underneath.",
+      "price_minor": 3999,
+      "currency": "USD",
+      "category": "office-furniture",
+      "image": "/images/categories/office-furniture.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 390
+      }
+    },
+    {
+      "id": "custom-business-cards-100",
+      "title": "Custom Business Cards (100)",
+      "description": "Upload your design and receive 100 premium-stock business cards.",
+      "price_minor": 1990,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 260
+      }
+    },
+    {
+      "id": "booklet-printing-a5",
+      "title": "Booklet Printing, A5 (from 25 copies)",
+      "description": "Saddle-stitched A5 booklets for menus, manuals and newsletters.",
+      "price_minor": 5900,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.4,
+        "count": 92
+      }
+    },
+    {
+      "id": "custom-wall-calendar-a3",
+      "title": "Custom Wall Calendar, A3",
+      "description": "A twelve-month wall calendar featuring your own photos and dates.",
+      "price_minor": 2490,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.7,
+        "count": 215
+      }
+    },
+    {
+      "id": "canvas-print-a2",
+      "title": "Canvas Print, A2",
+      "description": "Gallery-wrapped canvas print of your photo, ready to hang.",
+      "price_minor": 6990,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.8,
+        "count": 330
+      }
+    },
+    {
+      "id": "hardcover-photo-book-a4",
+      "title": "Hardcover Photo Book, A4 (20 pages)",
+      "description": "Layflat hardcover photo book to keep your favourite memories.",
+      "price_minor": 4990,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.6,
+        "count": 405
+      }
+    },
+    {
+      "id": "photo-prints-4x6-50",
+      "title": "Photo Prints, 4x6 (50 Pack)",
+      "description": "Lab-quality 4x6 inch prints on gloss or matte paper.",
+      "price_minor": 1490,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.5,
+        "count": 700
+      }
+    },
+    {
+      "id": "poster-print-a1",
+      "title": "Poster Print, A1",
+      "description": "Large-format A1 poster print on heavyweight satin paper.",
+      "price_minor": 2290,
+      "currency": "USD",
+      "category": "print-photo-services",
+      "image": "/images/categories/print-photo-services.svg",
+      "rating": {
+        "average": 4.3,
+        "count": 118
+      }
+    }
+  ]
+}

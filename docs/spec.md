@@ -3,7 +3,7 @@
 Source of truth for scope, assumptions and contracts. Agents and humans build against this file.
 
 ## Goal
-A product catalogue (browse, search, enquire) built as a **foundation, not a throwaway**: the product data source, email provider and look and feel are all expected to change.
+A product catalogue (browse, search, enquire) built as a **foundation, not a throwaway**: the product data source, email provider and look and feel are all expected to change. The default catalogue is a bundled file of sample office products in four categories (Office Supplies & Stationery, Tech & Electronics, Office Furniture, Print & Photo Services); the Fake Store API remains available as an alternative provider.
 
 ## Acceptance criteria (from the brief)
 | Area | Behaviour |
@@ -22,7 +22,7 @@ A product catalogue (browse, search, enquire) built as a **foundation, not a thr
 ## Assumptions
 | ID | Assumption |
 |---|---|
-| A1 | "Chosen top 5" is a curated list of product IDs in config (`FEATURED_PRODUCT_IDS`, default `12,11,3,18,5`: the five highest-rated Fake Store products at build time), not computed. Missing IDs are skipped and logged; no silent backfill. |
+| A1 | "Chosen top 5" is a curated list of product IDs in config (`FEATURED_PRODUCT_IDS`, default: five of the highest-rated products in the bundled catalogue, from several categories), not computed. Missing IDs are skipped and logged; no silent backfill. |
 | A2 | Category "top rated" = top 3 (configurable) by rating, then review count, then title. "Additional products" = the remainder, by title. |
 | A3 | Search is case-insensitive, all terms must match (AND), across title, description and category. The term is trimmed and whitespace-collapsed; a blank or over-100-char term is rejected with 422 (the UI prevents it). Plain substring matching: no regex, no fuzzy matching. |
 | A4 | Enquiry fields: name (required, 2-100), email (required, RFC-valid), phone (optional, digits and `+()-.` only), message (optional, max 1000). No quantity. Control characters are stripped server-side; name/phone are forced to one line. |
@@ -30,7 +30,7 @@ A product catalogue (browse, search, enquire) built as a **foundation, not a thr
 | A6 | No auth, accounts, cart, checkout or admin UI. |
 | A7 | Currency is USD. Prices are stored as integer cents. |
 | A8 | Product IDs are strings internally (a future source may not use integers). |
-| A9 | Image URLs are passed through from the source; only `https` is accepted. The mapper is the single place to rewrite them (e.g. CDN). |
+| A9 | Product images are our own static assets under `/images/` (served by the frontend, so no third-party host); `https` URLs are also accepted from other sources. Each source's mapper/validator is the single place to rewrite them (e.g. CDN). |
 | A10 | Enquiries persist in SQLite (portable to Postgres/RDS). |
 | A11 | No pagination on category pages (about 20 products). |
 | A12 | English only; accessibility basics (semantic HTML, labelled inputs, focus management), not a full audit. |
@@ -44,7 +44,7 @@ Contracts (`backend/app/Contracts`):
 - `ProductProviderInterface`: `all()`, `find($id)`, `byCategory($slug)`, `categories()`; typed exceptions only.
 - `EmailProviderInterface`: `send(EmailMessage)`; throws `EmailDeliveryException`.
 
-Implementations (`backend/app/Infrastructure`): `FakeStoreProvider` (+ `FakeStoreMapper`), `CachingProductProvider` (decorator, stale-if-error), `InMemoryProductProvider` (tests), `MockEmailProvider`, `LaravelMailEmailProvider`.
+Implementations (`backend/app/Infrastructure`): `JsonCatalogueProvider` (default; our own catalogue file, strictly validated, no network), `FakeStoreProvider` (+ `FakeStoreMapper`; optional), `CachingProductProvider` (decorator, stale-if-error), `InMemoryProductProvider` (tests), `MockEmailProvider`, `LaravelMailEmailProvider`.
 
 Services: `CatalogueService` (featured, category, search, detail), `EnquiryService` (validate product, persist, dispatch notification).
 
@@ -66,7 +66,7 @@ Validation -> 422 with field details. Unknown product/category -> 404. Upstream 
 
 Upstream budget: 4 s timeout x 2 attempts (1 retry, only on connection errors and 5xx), so a user waits at most about 8 s before a friendly error.
 
-## Fake Store quirks (verified against the live API)
+## Fake Store quirks (verified against the live API; only relevant when `CATALOGUE_PROVIDER=fakestore`)
 - No search endpoint: search runs in `CatalogueService` over the cached catalogue.
 - Unknown product id returns **HTTP 200 with an empty body**, not 404: the provider maps it to `ProductNotFoundException`.
 - Categories contain spaces and apostrophes (`men's clothing`) and one is misspelt in the source (`jewelery`): slugs are derived by the mapper and category names are URL-encoded when calling upstream.

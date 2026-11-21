@@ -5,6 +5,7 @@ Read `docs/spec.md` first: it is the source of truth for scope and assumptions.
 
 ## Stack
 - `backend/`: Laravel 13, PHP 8.3+, Pest for tests, Pint for style. JSON API under `/api/v1`.
+- Product catalogue: `backend/resources/catalogue/products.json` (default `local` provider, strictly validated; images in `frontend/public/images`). Keep prices as integer cents and ids URL-safe.
 - `frontend/`: React 19 + TypeScript + Vite, Vitest + Testing Library, oxlint.
 - `docker-compose.yml`: `web` (nginx gateway + built SPA), `api` (php-fpm), `mailpit` (dev SMTP sink).
 

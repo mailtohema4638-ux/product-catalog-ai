@@ -7,15 +7,15 @@ Where the acceptance criteria were unclear I picked the most reasonable reading,
 
 | ID | Unclear point | Assumption | Cost of being wrong |
 |---|---|---|---|
-| A1 | "I have chosen 5 products to be top rated" | A curated, ordered list of product IDs in config (`FEATURED_PRODUCT_IDS`), not computed from ratings. Default `12,11,3,18,5`: the five highest-rated Fake Store products when I built it. IDs missing from the source are skipped and logged, never silently replaced. | Low: if it should be computed, it is one method (`CatalogueService::featured()`). |
+| A1 | "I have chosen 5 products to be top rated" | A curated, ordered list of product IDs in config (`FEATURED_PRODUCT_IDS`), not computed from ratings. Default: five of the highest-rated products in the bundled catalogue, from four different categories. IDs missing from the source are skipped and logged, never silently replaced. | Low: if it should be computed, it is one method (`CatalogueService::featured()`). |
 | A2 | "Top rated products for that category … and additional products" | Top 3 (configurable) by rating, then review count, then title; the rest follow alphabetically. | Low: one comparator. |
 | A3 | "Products that have text matching that search term" | Case-insensitive; every word must match (AND); searches title, description and category name; plain substring, no fuzzy matching. 1–100 characters; a blank term is rejected (422) and the UI prevents it. | Low. |
 | A4 | "Complete the subsequent form with my contact details" | Name and email required; phone and message (≤1000 chars) optional. No quantity. | Low: documented recipe for adding a field. |
 | A5 | "The sales inbox will receive an email" | Only the sales inbox is emailed. The customer sees an on-screen thank-you with a reference. No confirmation email to the customer. | Medium if confirmation is wanted: needs a second message and a decision on content. Listed as next step. |
 | A6 | Scope | No auth, accounts, cart, checkout, or admin UI. | None for this MVP. |
-| A7 | Currency | USD as given. Prices are stored and moved as integer cents; formatted only in the UI. | Low. |
+| A7 | Currency | USD. Prices are stored and moved as integer cents and formatted only in the UI; currency is a per-product field in the catalogue file, so switching (for example to AUD) is a data change plus one locale string. | Low. |
 | A8 | Product IDs | Strings internally, because another source may not use integers. | None. |
-| A9 | Product images | Passed through from the source (`https` only) and allowed by the CSP. The mapper is the single place to rewrite them (for example to a CDN). | Privacy/availability depend on a third-party image host. |
+| A9 | Product images | Our own static assets (one illustration per category) served by the frontend from `/images/`, so there is no third-party host. Other sources may supply `https` URLs, which the CSP allows only for the Fake Store host. | Low: illustrations are placeholders for real product photography. |
 | A10 | Where enquiries live | SQLite (portable to PostgreSQL/RDS via `DB_*`). | Not suitable for multiple API instances; see limitations. |
 | A11 | Category size | About 20 products in total, so no pagination. | Revisit when a real source is larger. |
 | A12 | Accessibility / language | English only. Accessibility basics (semantic HTML, labels, focus management, ARIA on errors), not a full audit. | A real audit is a next step. |
@@ -59,7 +59,8 @@ Each one states the alternative I rejected.
 
 11. **Pest, contract tests and mutation checks.** Contract tests run every implementation through one suite, so a new source or email provider has an objective definition of "done". Architecture tests turn the layer rules into build failures. I verified the tests by breaking behaviour on purpose.
 
-12. **Validation twice, on purpose.** The zod schema gives instant feedback; the server is the authority and strips control characters. Server field errors are mapped back onto the form.
+12. **The default catalogue is our own file, with Fake Store kept as an alternative.** The brief says the data source will change, so the default is a bundled `products.json` of sample office products and the original Fake Store provider is one `CATALOGUE_PROVIDER` switch away. Swapping the default touched the provider layer, configuration and tests, and no service, controller or UI code, which is the evidence that the seam is real. A file we own is also validated strictly (a mistake fails loudly with the offending entry named), needs no network, and removes the dependency on a free public API for the demo and for CI. It is not wrapped in the cache decorator: it is an in-process file read, and caching would only delay edits. *Trade-off:* editing products means editing a JSON file; a database or CMS is the next step behind the same interface.
+13. **Validation twice, on purpose.** The zod schema gives instant feedback; the server is the authority and strips control characters. Server field errors are mapped back onto the form.
 
 ## How the design supports growth beyond the PoC
 - **New data source:** one class plus one `match` case, proved by the contract suite. Services, caching, controllers and the frontend do not change.
@@ -71,12 +72,12 @@ Each one states the alternative I rejected.
 Stated plainly so they are not a surprise:
 - **Docker stack:** I could not run Docker on my build machine. The images, nginx config and compose file were reviewed by reading and are covered by a CI job (`docker-smoke`) that builds them and walks the whole flow including Mailpit. That job is defined but has not run yet; run `docker compose up --build` once to confirm on your machine.
 - **Mailpit:** blocked by my network, so I verified real SMTP delivery with a small throwaway receiver instead. Mailpit itself is covered only by the (not yet run) CI smoke test.
-- **Fake Store reliability:** it is a free public service. Caching and stale-if-error cover outages after the first successful load; a cold start while it is down shows a friendly error.
+- **Fake Store (optional provider):** a free public service. If `CATALOGUE_PROVIDER=fakestore` is used, caching and stale-if-error cover outages after the first successful load; a cold start while it is down shows a friendly error. The default bundled catalogue has no such dependency.
 - **SQLite on a volume:** fine for one API container, not for several. Use RDS before scaling out.
 - **No retention policy for enquiries:** they contain personal data (name, email, phone). A real system needs retention, deletion and consent handling.
 - **Resend is a CLI command:** there is no UI or alert for failed enquiries yet.
 - **Accessibility** has been designed in and tested with attribute assertions and a manual browser pass, but not audited with assistive technology.
-- **Third-party images** are loaded directly from the source's host (a privacy and availability dependency); the mapper is where to proxy or rewrite them.
+- **Sample data:** product names, descriptions, prices and ratings are invented and the category images are illustrations, not product photos.
 
 ## What I would do with another day
 1. Run and fix anything the first real Docker run turns up; add a published image build.

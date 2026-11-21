@@ -7,8 +7,10 @@ use App\Exceptions\ProductNotFoundException;
 use App\Infrastructure\Products\CachingProductProvider;
 use App\Infrastructure\Products\FakeStoreMapper;
 use App\Infrastructure\Products\InMemoryProductProvider;
+use App\Infrastructure\Products\JsonCatalogueProvider;
 use Illuminate\Support\Facades\Cache;
 use Psr\Log\LoggerInterface;
+use Tests\Support\CatalogueFile;
 use Tests\Support\FakeStore;
 
 /*
@@ -28,6 +30,7 @@ dataset('product providers', [
 
         return FakeStore::provider();
     }],
+    'local catalogue file' => [fn (): ProductProviderInterface => new JsonCatalogueProvider(CatalogueFile::write(catalogueProducts()))],
     'in memory' => [fn (): ProductProviderInterface => new InMemoryProductProvider(catalogueProducts())],
     'caching decorator' => [fn (): ProductProviderInterface => new CachingProductProvider(
         inner: new InMemoryProductProvider(catalogueProducts()),

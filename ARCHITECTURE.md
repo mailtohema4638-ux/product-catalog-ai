@@ -18,10 +18,10 @@ flowchart LR
     Gateway -->|"FastCGI /api/*"| API["api: Laravel / php-fpm"]
     API --> Cache[("Cache<br/>file → Redis")]
     API --> DB[("SQLite<br/>→ RDS")]
-    API -->|"ProductProviderInterface"| FS["Fake Store API"]
+    API -->|"ProductProviderInterface"| Cat["Catalogue file (default)<br/>or Fake Store API"]
     API -->|"EmailProviderInterface"| Mail["Mailpit (dev)<br/>→ SES"]
 ```
-One origin for the browser (no CORS). The SPA talks only to `/api/v1`; it never calls the Fake Store API. This is enforced by tests: the frontend suite fails any request that is not mocked and asserts every call targets our own origin.
+One origin for the browser (no CORS). The SPA talks only to `/api/v1`; it never calls any third-party data source. This is enforced by tests: the frontend suite fails any request that is not mocked and asserts every call targets our own origin.
 
 ## Backend layers
 ```
@@ -51,9 +51,10 @@ These rules are executable: `tests/Architecture/LayersTest.php` fails the build 
 CatalogueService ──► ProductProviderInterface
                           ▲
                           │ implements
-        CachingProductProvider  (decorator: stale-if-error, lock)
+        CachingProductProvider  (decorator: stale-if-error, lock; used for remote sources)
                           │ wraps
-        FakeStoreProvider ──► FakeStoreMapper ──► FakeStore JSON  (only place that knows the shape)
+        JsonCatalogueProvider ──► resources/catalogue/products.json  (default; strict validation, no network, no cache)
+        FakeStoreProvider ──► FakeStoreMapper ──► FakeStore JSON  (optional; only place that knows that shape)
         InMemoryProductProvider  (tests; template for a new source)
 ```
 `CatalogueSettings` (a DTO built from config) carries business settings such as the curated featured IDs, so services never read config.
@@ -75,7 +76,7 @@ Composition (wording) and transport are separate: replacing SES with another pro
 2. nginx forwards `/api/*` to php-fpm; Laravel assigns a request id and applies the read throttle.
 3. `CategoryController` calls `CatalogueService::category()`.
 4. The service asks `ProductProviderInterface` (bound to `CachingProductProvider`).
-5. Cache hit: return. Miss: take a lock, call `FakeStoreProvider`, map to DTOs, store fresh (10 min) and stale (24 h) copies.
+5. With the default local catalogue the provider answers from its in-process data (no cache layer). With a remote source such as Fake Store: cache hit returns; a miss takes a lock, calls the provider, maps to DTOs and stores fresh (10 min) and stale (24 h) copies.
 6. The service splits top-rated from the rest; a Resource shapes the JSON; the response carries `Cache-Control: public, max-age=60`.
 
 ### Enquiry (`POST /api/v1/enquiries`)
