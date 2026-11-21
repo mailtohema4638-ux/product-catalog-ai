@@ -1,91 +1,219 @@
 # Decisions
 
-Assumptions, cuts, trade-offs, and what I would do next. The brief leaves gaps on purpose; this is how I filled them and why. For structure and flows see [ARCHITECTURE.md](ARCHITECTURE.md); for exact behaviour see [docs/spec.md](docs/spec.md).
+This document explains the assumptions, simplifications, and design decisions made while implementing the solution.
 
-## Assumptions
-Where the acceptance criteria were unclear I picked the most reasonable reading, recorded it, and moved on.
+The challenge intentionally leaves some requirements open to interpretation. Where this occurred, I made reasonable assumptions, documented them, and focused on delivering a maintainable proof of concept.
 
-| ID | Unclear point | Assumption | Cost of being wrong |
-|---|---|---|---|
-| A1 | "I have chosen 5 products to be top rated" | A curated, ordered list of product IDs in config (`FEATURED_PRODUCT_IDS`), not computed from ratings. Default: five of the highest-rated products in the bundled catalogue, from four different categories. IDs missing from the source are skipped and logged, never silently replaced. | Low: if it should be computed, it is one method (`CatalogueService::featured()`). |
-| A2 | "Top rated products for that category … and additional products" | Top 3 (configurable) by rating, then review count, then title; the rest follow alphabetically. | Low: one comparator. |
-| A3 | "Products that have text matching that search term" | Case-insensitive; every word must match (AND); searches title, description and category name; plain substring, no fuzzy matching. 1–100 characters; a blank term is rejected (422) and the UI prevents it. | Low. |
-| A4 | "Complete the subsequent form with my contact details" | Name and email required; phone and message (≤1000 chars) optional. No quantity. | Low: documented recipe for adding a field. |
-| A5 | "The sales inbox will receive an email" | Only the sales inbox is emailed. The customer sees an on-screen thank-you with a reference. No confirmation email to the customer. | Medium if confirmation is wanted: needs a second message and a decision on content. Listed as next step. |
-| A6 | Scope | No auth, accounts, cart, checkout, or admin UI. | None for this MVP. |
-| A7 | Currency | USD. Prices are stored and moved as integer cents and formatted only in the UI; currency is a per-product field in the catalogue file, so switching (for example to AUD) is a data change plus one locale string. | Low. |
-| A8 | Product IDs | Strings internally, because another source may not use integers. | None. |
-| A9 | Product images | Our own static assets (one illustration per category) served by the frontend from `/images/`, so there is no third-party host. Other sources may supply `https` URLs, which the CSP allows only for the Fake Store host. | Low: illustrations are placeholders for real product photography. |
-| A10 | Where enquiries live | SQLite (portable to PostgreSQL/RDS via `DB_*`). | Not suitable for multiple API instances; see limitations. |
-| A11 | Category size | About 20 products in total, so no pagination. | Revisit when a real source is larger. |
-| A12 | Accessibility / language | English only. Accessibility basics (semantic HTML, labels, focus management, ARIA on errors), not a full audit. | A real audit is a next step. |
+---
 
-## What I cut or simplified, and why
-Time-box guidance was 2–3 hours; the brief rewards judgement on the critical path over breadth.
+# Assumptions
 
-| Cut | Why | What it would take |
-|---|---|---|
-| Customer confirmation email | Not in the acceptance criteria; needs content decisions (A5). | A second `EmailMessage` from the composer; same provider. |
-| Real queue (SQS/Redis + worker) | Adds a container and ops for no PoC benefit. The notification is already a job and is dispatched after the response, so the switch is configuration plus retries/backoff. | Set `QUEUE_CONNECTION`, call `dispatch()` instead of `dispatchAfterResponse()`, add `tries`/`backoff`. |
-| Admin UI for the featured list | The brief says the entrepreneur "has chosen" them; config is enough for a PoC. | A table plus a form behind the same service method. |
-| Pagination | A11. | Add `page`/`per_page` to the search endpoint and provider. |
-| Infrastructure as code | "If you include infrastructure" is optional; I documented the AWS mapping instead of half-building it. | Terraform/CDK for ECS, RDS, ElastiCache, SES, CloudFront. |
-| Playwright end-to-end tests | The frontend suite drives real routing, data layer and components with the network mocked; setup cost would not fit the time-box. | The first test to add next. |
-| OpenAPI document | The API is small and described in the spec. | Generate typed client from it. |
-| CAPTCHA | Needs a third-party account, which the brief forbids. I used a honeypot, strict validation and a throttle instead. | Cloudflare Turnstile or similar, if abuse appears. |
+## A1 - Featured Products
 
-## Key design decisions
-Each one states the alternative I rejected.
+The requirement states:
 
-1. **Two seams, not more.** `ProductProviderInterface` and `EmailProviderInterface` are exactly the two things the brief says will change. I rejected repositories, event buses and CQRS: each would add indirection with no second implementation to justify it. *Trade-off:* a future change in an unexpected place (say, auth) will need a new seam then.
+> "I have chosen 5 products to be top rated."
 
-2. **Search lives in the service, not the provider.** The Fake Store API has no search endpoint, so putting it in `CatalogueService` makes any source searchable. *Trade-off:* in-memory matching over the whole catalogue does not scale past a few thousand products; the path forward is an optional "searchable" capability that delegates to a search engine.
+I interpreted this as a business decision made by the entrepreneur rather than an automatic calculation.
 
-3. **Featured list is configuration, owned by the app, not by the data source.** It survives a change of source because it is a business decision, not a property of the data. *Trade-off:* IDs are source-specific, so swapping sources means updating the list (the log warns about missing IDs).
+Featured products are therefore managed separately from product ratings and can be changed without modifying application logic.
 
-4. **Caching as a decorator with stale-if-error.** Caching stays out of both the service and the provider, is the only place outage behaviour lives, and is independently testable. The Fake Store API is a free public service and was observed to time out; serving stale data keeps the demo alive. Cached values are plain arrays because `cache.serializable_classes` is off (verified on the file driver). *Trade-off:* data can be up to 24 h stale during an outage; a user would rather see that than an error page.
+If this interpretation changes in the future, the selection logic can easily be moved to a rating-based calculation.
 
-5. **Save first, email after the response.** An email outage must never lose a lead or show the customer an error, and the customer should not wait on SMTP. The enquiry (with a snapshot of product title and price) is saved, then a job runs after the response. Failure is recorded on the enquiry and can be retried. *Trade-off:* with `dispatchAfterResponse` there is no automatic retry or backoff; recovery is the `enquiries:resend-failed` command (which also rescues enquiries whose job never ran).
+---
 
-6. **Money as integer cents.** Floats cause rounding errors (the classic `19.99 * 100`); the mapper converts once and the UI formats at the edge.
+## A2 - Top Rated Products Within a Category
 
-7. **One origin behind a gateway.** nginx serves the SPA and forwards `/api` to PHP-FPM: one command to run, no CORS, and a CSP that can be strict. The SPA and API remain independently deployable (S3/CloudFront and ECS). *Trade-off:* a mobile client on another origin would need CORS enabled (`CORS_ALLOWED_ORIGINS`).
+The requirement asks for top-rated products and additional products within a category but does not specify the number.
 
-8. **Plain-text sales email.** Nothing a customer types is ever interpreted as markup, and header-bound values are forced onto one line. *Trade-off:* less polished than HTML mail, which is fine for an internal notification.
+I chose to display:
 
-9. **Native `<dialog>` for the enquiry form.** Built-in focus trapping, Escape handling and focus restoration, no extra dependency. *Trade-off:* jsdom lacks it, so tests emulate `showModal`/`close`.
+- Top 3 rated products
+- Remaining products in a separate section
 
-10. **Typed, normalised errors end to end.** The backend returns one envelope with a request id; the client turns every failure (including a gateway HTML error page and network loss) into one `ApiError` with a safe user message. The UI never shows server text.
+This provides visibility for the highest-rated products while allowing users to browse the full catalogue.
 
-11. **Pest, contract tests and mutation checks.** Contract tests run every implementation through one suite, so a new source or email provider has an objective definition of "done". Architecture tests turn the layer rules into build failures. I verified the tests by breaking behaviour on purpose.
+---
 
-12. **The default catalogue is our own file, with Fake Store kept as an alternative.** The brief says the data source will change, so the default is a bundled `products.json` of sample office products and the original Fake Store provider is one `CATALOGUE_PROVIDER` switch away. Swapping the default touched the provider layer, configuration and tests, and no service, controller or UI code, which is the evidence that the seam is real. A file we own is also validated strictly (a mistake fails loudly with the offending entry named), needs no network, and removes the dependency on a free public API for the demo and for CI. It is not wrapped in the cache decorator: it is an in-process file read, and caching would only delay edits. *Trade-off:* editing products means editing a JSON file; a database or CMS is the next step behind the same interface.
-13. **Validation twice, on purpose.** The zod schema gives instant feedback; the server is the authority and strips control characters. Server field errors are mapped back onto the form.
+## A3 - Search Behaviour
 
-## How the design supports growth beyond the PoC
-- **New data source:** one class plus one `match` case, proved by the contract suite. Services, caching, controllers and the frontend do not change.
-- **New email provider:** one class plus one case, or just configuration for SES via Laravel's mailer.
-- **New look and feel:** components hold no business logic; styling is tokens plus one stylesheet; the API shape is presentation-independent, so a native mobile app can reuse `/api/v1`.
-- **Scale:** stateless API (horizontal scaling), cache and database swap by configuration, a queue swap is a one-line change in the job dispatch. See the AWS mapping in [ARCHITECTURE.md](ARCHITECTURE.md).
+The acceptance criteria state that a user enters a search term and clicks Search.
 
-## Known limitations and risks
-Stated plainly so they are not a surprise:
-- **Docker stack:** I could not run Docker on my build machine. The images, nginx config and compose file were reviewed by reading and are covered by a CI job (`docker-smoke`) that builds them and walks the whole flow including Mailpit. That job is defined but has not run yet; run `docker compose up --build` once to confirm on your machine.
-- **Mailpit:** blocked by my network, so I verified real SMTP delivery with a small throwaway receiver instead. Mailpit itself is covered only by the (not yet run) CI smoke test.
-- **Fake Store (optional provider):** a free public service. If `CATALOGUE_PROVIDER=fakestore` is used, caching and stale-if-error cover outages after the first successful load; a cold start while it is down shows a friendly error. The default bundled catalogue has no such dependency.
-- **SQLite on a volume:** fine for one API container, not for several. Use RDS before scaling out.
-- **No retention policy for enquiries:** they contain personal data (name, email, phone). A real system needs retention, deletion and consent handling.
-- **Resend is a CLI command:** there is no UI or alert for failed enquiries yet.
-- **Accessibility** has been designed in and tested with attribute assertions and a manual browser pass, but not audited with assistive technology.
-- **Sample data:** product names, descriptions, prices and ratings are invented and the category images are illustrations, not product photos.
+I assumed:
 
-## What I would do with another day
-1. Run and fix anything the first real Docker run turns up; add a published image build.
-2. Playwright end-to-end test of the five acceptance flows against the Compose stack.
-3. A real queue with retries and backoff, plus an alert for `failed` enquiries; an admin view to retry them.
-4. Customer confirmation email.
-5. Circuit breaker for the product source (stop calling a source that is clearly down) and a cache-warming command.
-6. Admin UI for the featured list; DB-backed.
-7. OpenAPI document and generated frontend types.
-8. Terraform/CDK for the AWS deployment and a CloudFront cache policy for the SPA and API reads.
-9. Accessibility audit, and enquiry retention/deletion policy.
+- Search is executed only when the Search button is clicked or Enter is pressed.
+- Search is case-insensitive.
+- Search matches product title, description, and category.
+- Search suggestions and live filtering are out of scope.
+
+The search term remains visible until user clicking other menu and after the search is performed so users can refine their query.
+
+---
+
+## A4 - Enquiry Form
+
+The acceptance criteria mention collecting customer contact details but do not define the fields.
+
+I assumed:
+
+Required fields:
+
+- Name
+- Email
+
+Optional fields:
+
+- Phone Number
+- Message
+
+This provides sufficient information for a sales follow-up while keeping the form simple.
+
+---
+
+## A5 - Sales Notification
+
+The challenge requires the sales inbox to receive an email when an enquiry is submitted.
+
+I assumed:
+
+- Only the sales team receives email notifications.
+- The customer receives an on-screen confirmation message and reference number.
+- Customer confirmation emails are outside the scope of the proof of concept.
+
+Customer confirmation emails would be one of the first enhancements added to a future version.
+
+---
+
+## A6 - Scope
+
+The following items were considered outside the scope of this proof of concept:
+
+- User accounts
+- Authentication
+- Shopping cart
+- Checkout process
+- Product administration screens
+
+The focus was kept on product discovery and customer enquiries.
+
+---
+
+## A7 - Currency
+
+Products are displayed in USD.
+
+Prices are stored internally as integer cents to avoid floating-point rounding issues and formatted only when displayed to the user.
+
+Additional currencies can be introduced through catalogue data and formatting changes.
+
+---
+
+## A8 - Product Identifiers
+
+Product identifiers are treated as strings internally.
+
+This allows future catalogue providers to use different identifier formats without requiring application changes.
+
+---
+
+## A9 - Product Images
+
+The application uses local category illustrations and catalogue images.
+
+This avoids dependency on third-party image providers and ensures a consistent experience during demonstrations.
+
+---
+
+## A10 - Enquiry Storage
+
+Customer enquiries are stored in SQLite.
+
+This keeps setup simple for a proof of concept while allowing future migration to PostgreSQL, MySQL, or other relational databases.
+
+---
+
+## A11 - Category Size
+
+The current catalogue is small enough that users can comfortably browse all products within a category without pagination.
+
+Pagination can be introduced later if catalogue size increases.
+
+---
+
+## A12 - Accessibility and Language
+
+The application is English-only.
+
+Basic accessibility practices have been applied, including:
+
+- Semantic HTML
+- Form labels
+- Keyboard navigation
+- Error messaging
+
+A full accessibility audit has not been completed.
+
+---
+
+# Additional Product and UX Decisions
+
+These decisions were made where the acceptance criteria left room for interpretation.
+
+## Home Navigation
+
+The challenge refers to a home page but does not specify navigation behaviour.
+
+A dedicated Home menu item was added so users can easily return to the featured products page.
+
+---
+
+## Business-Oriented Categories
+
+The original sample Fake Store categories did not align well with the entrepreneur catalogue described in the challenge.
+
+The catalogue was adapted to use:
+
+- Office Furniture
+- Office Supplies & Stationery
+- Print & Photo Services
+- Tech & Electronics
+
+This creates a more realistic business catalogue while keeping the same underlying architecture.
+
+---
+
+## Category Context on Product Details
+
+When a user navigates from a category page to a product page, the category remains highlighted in the navigation.
+
+This helps maintain user context and improves navigation.
+
+---
+
+## Search Term Visibility
+
+After a search is performed, the search term remains visible.
+
+This allows users to understand which query produced the results and makes search refinement easier.
+
+---
+
+
+## Enquiry Confirmation
+
+Customers receive immediate confirmation after submitting an enquiry.
+
+Enquiries are stored before email delivery is attempted, ensuring that customer requests are not lost if email delivery fails.
+
+---
+
+# Technical Decisions
+
+## Product Provider Abstraction
+
+Product information is accessed through a ProductProvider interface.
+
+Benefits:
+
+- Catalogue source can change without affecting business logic.
+- Fake Store API can be replaced by another provider.

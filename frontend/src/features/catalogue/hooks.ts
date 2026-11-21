@@ -9,7 +9,7 @@ export const useCategory = (slug: string) =>
   useQuery({ queryKey: ['category', slug], queryFn: () => catalogueApi.category(slug) })
 
 export const useProduct = (id: string) =>
-  useQuery({ queryKey: ['product', id], queryFn: () => catalogueApi.product(id) })
+  useQuery({ queryKey: ['product', id], queryFn: () => catalogueApi.product(id), enabled: id !== '' })
 
 export const useSearch = (term: string) =>
   useQuery({ queryKey: ['search', term], queryFn: () => catalogueApi.search(term), enabled: term.length > 0 })
