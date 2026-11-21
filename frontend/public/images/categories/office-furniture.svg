@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Desk and office chair">
+  <rect width="400" height="300" fill="#fff7ed"/>
+  <rect x="40" y="130" width="230" height="16" rx="4" fill="#92400e"/>
+  <rect x="55" y="146" width="14" height="110" fill="#78350f"/>
+  <rect x="241" y="146" width="14" height="110" fill="#78350f"/>
+  <rect x="85" y="146" width="70" height="60" rx="4" fill="#b45309"/>
+  <rect x="95" y="160" width="50" height="6" rx="3" fill="#fde68a"/>
+  <rect x="95" y="178" width="50" height="6" rx="3" fill="#fde68a"/>
+  <rect x="130" y="80" width="90" height="50" rx="5" fill="#1f2937"/>
+  <rect x="136" y="86" width="78" height="38" rx="2" fill="#7dd3fc"/>
+  <rect x="170" y="130" width="10" height="0" fill="#1f2937"/>
+  <g transform="translate(320 150)">
+    <rect x="-30" y="-60" width="60" height="70" rx="14" fill="#ea580c"/>
+    <rect x="-34" y="14" width="68" height="18" rx="9" fill="#c2410c"/>
+    <rect x="-4" y="32" width="8" height="40" fill="#44403c"/>
+    <g stroke="#44403c" stroke-width="7" stroke-linecap="round">
+      <line x1="0" y1="76" x2="-34" y2="92"/><line x1="0" y1="76" x2="34" y2="92"/><line x1="0" y1="76" x2="0" y2="96"/>
+    </g>
+  </g>
+</svg>

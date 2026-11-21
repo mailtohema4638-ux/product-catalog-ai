@@ -1,0 +1,375 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.visually-hidden,
+.skip-link:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 10;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius);
+}
+
+/* Header */
+.site-header {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.search-bar {
+  display: flex;
+  flex: 1 1 18rem;
+  max-width: 28rem;
+  gap: var(--space-2);
+}
+
+.search-bar__field {
+  position: relative;
+  flex: 1;
+}
+
+/* Room for the clear button inside the box. */
+.search-bar__field input {
+  padding-right: 2.25rem;
+}
+
+/* We draw our own clear button, so hide the browser's to avoid two of them. */
+.search-bar__field input[type='search']::-webkit-search-cancel-button {
+  appearance: none;
+  display: none;
+}
+
+.search-bar__clear {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  color: var(--color-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.search-bar__clear:hover {
+  color: var(--color-text);
+  background: var(--color-border);
+}
+
+.site-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav a {
+  display: inline-block;
+  padding: var(--space-1) 0;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.site-nav a:hover,
+.site-nav a.active {
+  border-bottom-color: var(--color-primary);
+}
+
+/* Form controls */
+input,
+textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+input[aria-invalid='true'],
+textarea[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.button {
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.button--secondary {
+  color: var(--color-primary);
+  background: transparent;
+}
+
+.button--large {
+  padding: var(--space-3) var(--space-5);
+  font-size: 1.1rem;
+}
+
+/* Product grid and cards */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-3) 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-3);
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.product-card:hover {
+  border-color: var(--color-primary);
+}
+
+.product-card__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 11rem;
+  margin-bottom: var(--space-3);
+}
+
+.product-card__media img {
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.product-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius);
+}
+
+.product-card__title {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+}
+
+.product-card__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: auto 0 0;
+}
+
+.product-card__price {
+  font-weight: 700;
+}
+
+.rating {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.rating__count {
+  margin-left: var(--space-1);
+}
+
+/* Product detail */
+.product-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+}
+
+.product-detail__media {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.product-detail__media img {
+  max-height: 26rem;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
+.product-detail__price {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+@media (max-width: 48rem) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* States */
+.state {
+  padding: var(--space-4);
+  color: var(--color-muted);
+}
+
+.state--error {
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+}
+
+.state__meta {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.results-count {
+  color: var(--color-muted);
+}
+
+/* Enquiry dialog */
+.dialog {
+  width: min(32rem, calc(100vw - 2rem));
+  padding: 0;
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.dialog__body {
+  padding: var(--space-4);
+}
+
+.dialog__body h2 {
+  margin-top: 0;
+}
+
+.dialog__product {
+  margin-top: 0;
+  color: var(--color-muted);
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.field {
+  margin-bottom: var(--space-3);
+}
+
+.field label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-weight: 600;
+}
+
+.field__error,
+.form-error {
+  margin: var(--space-1) 0 0;
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

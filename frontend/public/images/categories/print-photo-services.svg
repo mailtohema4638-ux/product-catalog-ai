@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" role="img" aria-label="Framed photo print">
+  <rect width="400" height="300" fill="#fdf2f8"/>
+  <rect x="80" y="40" width="240" height="200" rx="6" fill="#831843"/>
+  <rect x="98" y="58" width="204" height="164" fill="#ffffff"/>
+  <rect x="108" y="68" width="184" height="144" fill="#bae6fd"/>
+  <circle cx="250" cy="110" r="18" fill="#fde047"/>
+  <polygon points="108,212 175,125 225,185 252,155 292,212" fill="#22c55e"/>
+  <polygon points="175,125 195,150 160,150" fill="#ffffff" opacity="0.8"/>
+  <g transform="translate(330 232)">
+    <rect x="-34" y="-22" width="68" height="40" rx="6" fill="#475569"/>
+    <rect x="-24" y="-40" width="48" height="22" fill="#e2e8f0"/>
+    <rect x="-24" y="2" width="48" height="26" fill="#ffffff" stroke="#94a3b8"/>
+  </g>
+</svg>

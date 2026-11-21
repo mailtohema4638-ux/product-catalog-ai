@@ -1,0 +1,13 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+
+# Tooling and OS
+node_modules/
+dist/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

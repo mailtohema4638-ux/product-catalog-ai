@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, curl, intl
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: Code style (Pint)
+        run: vendor/bin/pint --test
+      - name: Static analysis (Larastan, level 6)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+      - name: Tests (Pest)
+        run: vendor/bin/pest
+      - name: Dependency audit
+        run: composer audit
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  # Builds the real images and exercises the stack end to end: gateway, SPA, API, product catalogue,
+  # enquiry and the email arriving in Mailpit. The default catalogue is a bundled file, so no outbound access is needed.
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        run: docker compose up -d --build --wait
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          base=http://localhost:8080
+          curl() { command curl -fsS --retry 5 --retry-all-errors --retry-delay 3 "$@"; }
+
+          echo "SPA is served";           curl "$base/" | grep -q "Product Catalogue"
+          echo "API health via gateway";  curl "$base/api/v1/health" | jq -e '.data.status == "ok"'
+          echo "Home: 5 featured";        curl "$base/api/v1/featured" | jq -e '.data | length == 5'
+          echo "Four categories";         curl "$base/api/v1/categories" | jq -e '.data | length == 4'
+          echo "Category page: top rated then more"; curl "$base/api/v1/categories/office-furniture" | jq -e '(.data.top_rated | length == 3) and (.data.others | length > 0)'
+          echo "Product image is served";  test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/images/categories/tech-electronics.svg")" = 200
+          echo "Search";                  curl "$base/api/v1/products?q=pens" | jq -e '.data | length == 2'
+          echo "Unknown product is 404";  test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/api/v1/products/no-such-product")" = 404
+          echo "Client-side route falls back to the SPA"; curl "$base/products/a4-copy-paper-500" | grep -q "Product Catalogue"
+          echo "Internal front controller is not exposed"; test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/index.php")" != 200
+          echo "Security headers";        command curl -sI "$base/" | grep -qi '^content-security-policy:'
+
+          echo "Enquiry is accepted"
+          curl -X POST "$base/api/v1/enquiries" -H 'Content-Type: application/json' \
+            -d '{"product_id":"ergonomic-mesh-office-chair","name":"CI Bot","email":"ci@example.com","message":"smoke test"}' \
+            | jq -e '.data.reference | length > 0'
+
+          echo "Sales email arrives in Mailpit"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            total=$(curl http://localhost:8025/api/v1/messages | jq '.total')
+            [ "$total" = "1" ] && break
+            sleep 2
+          done
+          curl http://localhost:8025/api/v1/messages | jq -e '.messages[0].Subject | startswith("New enquiry")'
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

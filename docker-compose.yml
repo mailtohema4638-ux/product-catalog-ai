@@ -1,0 +1,43 @@
+name: product-catalog
+
+services:
+  # Gateway + SPA. Single origin for the browser; forwards /api/* to Laravel.
+  web:
+    build: ./frontend
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    build: ./backend
+    # Defaults come from the committed example; an optional root .env overrides them.
+    env_file:
+      - ./backend/.env.example
+      - path: ./.env
+        required: false
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "false"
+      LOG_CHANNEL: stderr
+      DB_DATABASE: /data/database.sqlite
+      TRUSTED_PROXIES: "*"
+    volumes:
+      - api-data:/data
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) ? 0 : 1);"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    depends_on:
+      - mailpit
+
+  # Local SMTP sink with a web UI so reviewers can see the sales email arrive. No account needed.
+  mailpit:
+    image: axllent/mailpit:v1.29
+    ports:
+      - "${MAILPIT_UI_PORT:-8025}:8025"
+
+volumes:
+  api-data:
