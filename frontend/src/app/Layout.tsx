@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouteError } from 'react-router-dom'
-import { CategoryNav } from '../features/search/CategoryNav'
+import { SiteNav } from '../features/search/SiteNav'
 import { SearchBar } from '../features/search/SearchBar'
 
 export function Layout() {
@@ -16,7 +16,7 @@ export function Layout() {
           <SearchBar />
         </div>
         <div className="container">
-          <CategoryNav />
+          <SiteNav />
         </div>
       </header>
       <main id="main-content" className="container">

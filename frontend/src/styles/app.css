@@ -92,7 +92,7 @@ img {
   flex: 1;
 }
 
-.category-nav ul {
+.site-nav ul {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
@@ -101,7 +101,7 @@ img {
   list-style: none;
 }
 
-.category-nav a {
+.site-nav a {
   display: inline-block;
   padding: var(--space-1) 0;
   color: var(--color-text);
@@ -109,8 +109,8 @@ img {
   border-bottom: 2px solid transparent;
 }
 
-.category-nav a:hover,
-.category-nav a.active {
+.site-nav a:hover,
+.site-nav a.active {
   border-bottom-color: var(--color-primary);
 }
 

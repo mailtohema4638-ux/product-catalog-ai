@@ -58,6 +58,7 @@ Within phases I steered by correcting: for example, insisting on checking the li
 | 18 | The gateway overwrote only `X-Forwarded-For`; host, proto, port and prefix from a client could still reach Laravel. | Code-review agent. | nginx now sets all `X-Forwarded-*` values; also switched to an internal front-controller rewrite and an unprivileged image. |
 | 19 | `enquiries:resend-failed` used offset paging while changing the filtered column (skips rows past 1000) and ignored enquiries stuck in `received` (job died after the response), so "never lose an enquiry" was only half true. | Code-review agent. | `lazyById`, plus recovery of `received` enquiries older than 10 minutes; four new tests. |
 | 20 | `config/auth.php` still referenced the `User` model I had deleted in Phase 1. | Larastan. | Pointed at a real framework class. |
+| 21 | Adding a Home link to the header: (a) an existing home-page test grabbed "the first list on the page" and assumed it was the product grid, which broke as soon as the nav rendered immediately; (b) my code comment claimed `end` stopped Home being "current" on every route, but React Router already special-cases the root link. | (a) The test failed on the first run; (b) a mutation check removing `end` survived, so I read the library source instead of assuming a test gap. | (a) Scoped the test to the "Top rated products" region; (b) corrected the comment to say what `end` really does. |
 
 ## Which parts the AI generated, and what a human must check
 | Area | AI role | Human review focus |

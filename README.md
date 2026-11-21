@@ -93,7 +93,7 @@ docker compose exec api php artisan enquiries:resend-failed
 cd backend  && vendor/bin/pest && vendor/bin/pint --test && vendor/bin/phpstan analyse
 cd frontend && npm test && npm run lint && npm run typecheck && npm run build
 ```
-At the time of writing: 221 backend and 71 frontend tests. They cover the acceptance criteria, provider contracts (every product and email implementation runs the same suite), error paths, abuse protection, durability when email fails, and the architectural layer rules. CI (`.github/workflows/ci.yml`) also runs dependency audits and a `docker-smoke` job that builds the images and exercises the whole stack, including the email arriving in Mailpit (defined, but not yet run when this was written).
+At the time of writing: 221 backend and 73 frontend tests. They cover the acceptance criteria, provider contracts (every product and email implementation runs the same suite), error paths, abuse protection, durability when email fails, and the architectural layer rules. CI (`.github/workflows/ci.yml`) also runs dependency audits and a `docker-smoke` job that builds the images and exercises the whole stack, including the email arriving in Mailpit (defined, but not yet run when this was written).
 
 ## Assumptions, cuts and decisions
 The acceptance criteria leave gaps on purpose. Every assumption (for example, "top rated" means a curated list on the home page and a computed ranking on category pages), every requirement I simplified or dropped, the trade-offs, and what I would do next are in **[DECISIONS.md](DECISIONS.md)**.

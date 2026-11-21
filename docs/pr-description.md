@@ -30,7 +30,7 @@ Controllers are thin; business rules live in services that depend on two contrac
 | Check | Result |
 |---|---|
 | Backend tests (Pest) | 221 passing: unit, feature, contract (4 product + 2 email implementations), architecture |
-| Frontend tests (Vitest + MSW) | 71 passing; any unmocked network request fails the test |
+| Frontend tests (Vitest + MSW) | 73 passing; any unmocked network request fails the test |
 | Static analysis | Pint, Larastan level 6, oxlint, `tsc`: clean |
 | Dependency audits | `composer audit`, `npm audit`: no advisories |
 | Mutation checks | About 30 deliberate bugs (OR instead of AND search, truncated money, dropped stale-if-error, loosened throttle, trust-all proxies, client calling a third-party origin, …): every one turned the suite red |
