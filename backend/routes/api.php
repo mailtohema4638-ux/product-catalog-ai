@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\EnquiryController;
 use App\Http\Controllers\Api\V1\FeaturedProductsController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\ProductController;
@@ -8,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('/health', HealthController::class);
+
+    Route::post('/enquiries', [EnquiryController::class, 'store'])->middleware('throttle:enquiries');
 
     Route::middleware(['throttle:catalogue-read', 'cache.public:60'])->group(function (): void {
         Route::get('/featured', FeaturedProductsController::class);

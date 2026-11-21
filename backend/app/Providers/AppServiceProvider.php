@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Enquiries send email, so they get a much tighter limit than reads.
+        RateLimiter::for('enquiries', fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('catalogue-read', fn (Request $request): Limit => Limit::perMinute(60)->by($request->ip()));
     }
 }

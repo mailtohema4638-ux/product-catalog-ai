@@ -35,6 +35,8 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="EMAIL_PROVIDER" value="mock"/>
+        <env name="SALES_INBOX_ADDRESS" value="sales@catalogue.test"/>
         <env name="FAKESTORE_RETRY_SLEEP_MS" value="0"/>
         <env name="FAKESTORE_BASE_URL" value="https://fakestore.test"/>
         <env name="PULSE_ENABLED" value="false"/>

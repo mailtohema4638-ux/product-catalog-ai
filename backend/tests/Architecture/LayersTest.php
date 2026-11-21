@@ -31,6 +31,14 @@ arch('infrastructure implements the product contract')
     ->toImplement('App\Contracts\ProductProviderInterface')
     ->ignoring('App\Infrastructure\Products\FakeStoreMapper');
 
+arch('email infrastructure implements the email contract')
+    ->expect('App\Infrastructure\Email')
+    ->toImplement('App\Contracts\EmailProviderInterface');
+
+arch('jobs and services never talk to the mail transport directly')
+    ->expect(['App\Jobs', 'App\Services'])
+    ->not->toUse(['Illuminate\Support\Facades\Mail', 'Illuminate\Contracts\Mail', 'Illuminate\Mail']);
+
 arch('production code does not depend on tests')
     ->expect('App')
     ->not->toUse('Tests');
