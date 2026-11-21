@@ -2,7 +2,7 @@
 
 A product catalogue (browse, search, enquire) built as a foundation that can grow: the product data source, email provider and look and feel are all designed to be swapped.
 
-> **Status: Phase 2 of 4 (backend core).** The read API (featured, categories, category page, search, product detail) is built and tested against a faked Fake Store. Enquiries (Phase 3) and the React UI (Phase 3) are next. See [docs/spec.md](docs/spec.md) for the full scope.
+> **Status: Phase 3 of 4 (feature complete).** Browse, category pages, search, product details and enquiries all work end to end (React, Laravel, real SMTP, live Fake Store). Remaining: hardening, cold-start verification of the Docker stack, and the architecture/decision docs. See [docs/spec.md](docs/spec.md) for the full scope.
 
 ## Stack and why
 | Layer | Choice | Why |
@@ -43,9 +43,19 @@ In this mode set `MAIL_HOST=127.0.0.1` or `EMAIL_PROVIDER=mock` in `backend/.env
 | GET | `/api/v1/categories/{slug}` | `{category, top_rated[], others[]}` |
 | GET | `/api/v1/products?q=&category=` | Search; `q` is required (1-100 chars) |
 | GET | `/api/v1/products/{id}` | Product detail |
+| POST | `/api/v1/enquiries` | Submit an enquiry (201 `{reference}`); emails the sales inbox after responding |
 | GET | `/api/v1/health` | Liveness |
 
 Errors always look like `{"error": {"code", "message", "details"?, "request_id"}}`. Prices are `{amount_minor, currency}` (integer cents).
+
+## Seeing the sales email
+`docker compose up --build`, submit an enquiry from any product page, then open Mailpit at http://localhost:8025. If email delivery ever fails the customer still sees "Thank you", the enquiry is kept with status `failed`, and you can retry with:
+
+```bash
+docker compose exec api php artisan enquiries:resend-failed
+```
+
+Set `EMAIL_PROVIDER=mock` to run with no mail server at all.
 
 ## Tests and checks
 ```bash
@@ -57,7 +67,7 @@ cd frontend && npm test && npm run lint && npm run typecheck
 | Path | Purpose |
 |---|---|
 | `backend/` | Laravel API (`/api/v1`) |
-| `frontend/` | React SPA + nginx gateway config |
+| `frontend/` | React SPA (`src/api` client, `src/features` by area, `src/pages`) + nginx gateway config |
 | `docs/` | Spec, and (later) ADRs |
 | `AGENTS.md` | Rules for AI agents working in this repo |
 | `AI_USAGE.md` | How AI was used, what it got wrong |

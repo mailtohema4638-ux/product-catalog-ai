@@ -25,8 +25,8 @@ A product catalogue (browse, search, enquire) built as a **foundation, not a thr
 | A1 | "Chosen top 5" is a curated list of product IDs in config (`FEATURED_PRODUCT_IDS`, default `12,11,3,18,5`: the five highest-rated Fake Store products at build time), not computed. Missing IDs are skipped and logged; no silent backfill. |
 | A2 | Category "top rated" = top 3 (configurable) by rating, then review count, then title. "Additional products" = the remainder, by title. |
 | A3 | Search is case-insensitive, all terms must match (AND), across title, description and category. The term is trimmed and whitespace-collapsed; a blank or over-100-char term is rejected with 422 (the UI prevents it). Plain substring matching: no regex, no fuzzy matching. |
-| A4 | Enquiry fields: name (required), email (required), phone (optional), message (optional, max 1000). No quantity. |
-| A5 | Only the sales inbox is emailed; the customer sees an on-screen thank-you (customer confirmation email is a next step). |
+| A4 | Enquiry fields: name (required, 2-100), email (required, RFC-valid), phone (optional, digits and `+()-.` only), message (optional, max 1000). No quantity. Control characters are stripped server-side; name/phone are forced to one line. |
+| A5 | Only the sales inbox is emailed; the customer sees an on-screen thank-you with a reference (customer confirmation email is a next step). The recipient comes from `SALES_INBOX_ADDRESS` only. |
 | A6 | No auth, accounts, cart, checkout or admin UI. |
 | A7 | Currency is USD. Prices are stored as integer cents. |
 | A8 | Product IDs are strings internally (a future source may not use integers). |
@@ -71,6 +71,15 @@ Upstream budget: 4 s timeout x 2 attempts (1 retry, only on connection errors an
 - Unknown product id returns **HTTP 200 with an empty body**, not 404: the provider maps it to `ProductNotFoundException`.
 - Categories contain spaces and apostrophes (`men's clothing`) and one is misspelt in the source (`jewelery`): slugs are derived by the mapper and category names are URL-encoded when calling upstream.
 - `price` is a float: converted to integer cents in the mapper.
+
+## Enquiry flow
+1. `POST /api/v1/enquiries` is validated by `StoreEnquiryRequest` (honeypot field `website`; filled = silent fake success, nothing saved).
+2. `EnquiryService` checks the product exists (404 if not, 503 if the source is down: nothing is saved in either case), then **saves the enquiry** with a snapshot of the product title and price.
+3. `SendEnquiryNotification` runs **after the response is sent**, composes a plain-text email (`EnquiryEmailComposer`) and hands it to `EmailProviderInterface`.
+4. Delivery failure never reaches the customer: the enquiry is marked `failed` with a reason and the cause is logged (no customer data in logs). `php artisan enquiries:resend-failed` re-queues failed enquiries. The job is idempotent.
+5. Throttle: 5 enquiries per minute per IP. The response contains only a `reference`, never an echo of the submitted data.
+
+Email providers (`EMAIL_PROVIDER`): `mail` (Laravel mailer; transport via `MAIL_MAILER`, SMTP to Mailpit locally, SES later) and `mock` (records only).
 
 ## Caching
 `CachingProductProvider` wraps the real provider: fresh TTL 10 min, stale copy 24 h served only when upstream fails (and re-armed for 30 s so a dead upstream is not hammered). Atomic lock to prevent stampedes. Values are cached as **plain arrays**, not objects: `cache.serializable_classes` is disabled, so cached objects come back as `__PHP_Incomplete_Class` (verified). `Cache-Control: public, max-age=60` on successful GET endpoints. Enquiries are never cached.

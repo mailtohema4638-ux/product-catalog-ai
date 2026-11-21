@@ -17,11 +17,13 @@ Read `docs/spec.md` first: it is the source of truth for scope and assumptions.
 6. Product IDs are strings internally.
 7. The frontend NEVER calls the Fake Store API or any third party. It only calls `/api/v1/*` through `frontend/src/api`.
 8. Enquiries are persisted before email is attempted; an email failure must never lose the enquiry or show the customer an error.
-9. All errors use the envelope `{ "error": { "code", "message", "details?", "request_id" } }`. Never expose stack traces or upstream error bodies.
+9. Sales emails are plain text; customer-supplied values that land in headers (subject, reply-to name) are forced to one line. The recipient comes from config only.
+10. All errors use the envelope `{ "error": { "code", "message", "details?", "request_id" } }`. Never expose stack traces or upstream error bodies.
 
 ## Security rules
 - No secrets in the repo. Configuration goes through `.env.example` + `config/*.php`; never call `env()` outside `config/` (the only exception is `bootstrap/app.php`).
 - The sales inbox address comes from config only, never from request input.
+- Frontend tests use MSW with `onUnhandledRequest: 'error'`: any request that is not mocked fails the test, which is also how we prove the browser only talks to `/api`.
 - Frontend: no `dangerouslySetInnerHTML`, no inline `style` attributes or inline scripts (the gateway CSP forbids them).
 - Treat upstream product data as untrusted.
 
