@@ -2,7 +2,7 @@
 
 A product catalogue (browse, search, enquire) built as a foundation that can grow: the product data source, email provider and look and feel are all designed to be swapped.
 
-> **Status: Phase 1 of 4 (foundations).** The stack, Docker setup, CI and agent rules are in place. Catalogue features are built in Phases 2 and 3. See [docs/spec.md](docs/spec.md) for the full scope.
+> **Status: Phase 2 of 4 (backend core).** The read API (featured, categories, category page, search, product detail) is built and tested against a faked Fake Store. Enquiries (Phase 3) and the React UI (Phase 3) are next. See [docs/spec.md](docs/spec.md) for the full scope.
 
 ## Stack and why
 | Layer | Choice | Why |
@@ -34,6 +34,18 @@ touch database/database.sqlite && php artisan migrate && php artisan serve     #
 cd frontend && npm install && npm run dev                                       # http://localhost:5173, proxies /api to :8000
 ```
 In this mode set `MAIL_HOST=127.0.0.1` or `EMAIL_PROVIDER=mock` in `backend/.env`.
+
+## API (so far)
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/v1/featured` | The curated top-rated products, in configured order |
+| GET | `/api/v1/categories` | Category list |
+| GET | `/api/v1/categories/{slug}` | `{category, top_rated[], others[]}` |
+| GET | `/api/v1/products?q=&category=` | Search; `q` is required (1-100 chars) |
+| GET | `/api/v1/products/{id}` | Product detail |
+| GET | `/api/v1/health` | Liveness |
+
+Errors always look like `{"error": {"code", "message", "details"?, "request_id"}}`. Prices are `{amount_minor, currency}` (integer cents).
 
 ## Tests and checks
 ```bash

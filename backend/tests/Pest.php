@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Contract');
+// Tests must never reach the real Fake Store API.
+pest()->extend(TestCase::class)
+    ->beforeEach(fn () => Http::preventStrayRequests())
+    ->in('Feature', 'Unit', 'Contract');

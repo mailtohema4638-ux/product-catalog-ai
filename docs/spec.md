@@ -22,9 +22,9 @@ A product catalogue (browse, search, enquire) built as a **foundation, not a thr
 ## Assumptions
 | ID | Assumption |
 |---|---|
-| A1 | "Chosen top 5" is a curated list of product IDs in config (`FEATURED_PRODUCT_IDS`), not computed. Missing IDs are skipped and logged; no silent backfill. |
-| A2 | Category "top rated" = top 3 (configurable) by rating, then review count. "Additional products" = the remainder, by title. |
-| A3 | Search is case-insensitive, all terms must match (AND), across title, description and category. Term is trimmed, 1-100 chars. |
+| A1 | "Chosen top 5" is a curated list of product IDs in config (`FEATURED_PRODUCT_IDS`, default `12,11,3,18,5`: the five highest-rated Fake Store products at build time), not computed. Missing IDs are skipped and logged; no silent backfill. |
+| A2 | Category "top rated" = top 3 (configurable) by rating, then review count, then title. "Additional products" = the remainder, by title. |
+| A3 | Search is case-insensitive, all terms must match (AND), across title, description and category. The term is trimmed and whitespace-collapsed; a blank or over-100-char term is rejected with 422 (the UI prevents it). Plain substring matching: no regex, no fuzzy matching. |
 | A4 | Enquiry fields: name (required), email (required), phone (optional), message (optional, max 1000). No quantity. |
 | A5 | Only the sales inbox is emailed; the customer sees an on-screen thank-you (customer confirmation email is a next step). |
 | A6 | No auth, accounts, cart, checkout or admin UI. |
@@ -55,17 +55,25 @@ Services: `CatalogueService` (featured, category, search, detail), `EnquiryServi
 | GET | `/featured` | The curated products |
 | GET | `/categories` | Category list |
 | GET | `/categories/{slug}` | `{category, topRated[], others[]}` |
-| GET | `/products?q=&category=` | Search / browse |
+| GET | `/products?q=&category=` | Search (`q` required, 1-100 chars; optional `category` slug) |
 | GET | `/products/{id}` | Detail |
 | POST | `/enquiries` | Submit enquiry (201) |
 
 Success: `{ "data": ..., "meta"?: ... }`. Error: `{ "error": { "code", "message", "details?", "request_id" } }`.
 
 ## Error handling
-Validation -> 422 with field details. Unknown product/category -> 404. Upstream timeout/5xx/429/malformed -> stale cache if available, else 503 (`Retry-After` on 429). Our own throttle -> 429. Email failure -> enquiry already saved, customer still sees thank-you, status `failed` for operators.
+Validation -> 422 with field details. Unknown product/category -> 404. Upstream timeout/5xx/429/malformed -> stale cache if available, else 503 (`catalogue_unavailable`, or `catalogue_busy` for upstream 429; `Retry-After` always set). Our own throttle (60/min/IP on reads) -> 429. Email failure -> enquiry already saved, customer still sees thank-you, status `failed` for operators.
+
+Upstream budget: 4 s timeout x 2 attempts (1 retry, only on connection errors and 5xx), so a user waits at most about 8 s before a friendly error.
+
+## Fake Store quirks (verified against the live API)
+- No search endpoint: search runs in `CatalogueService` over the cached catalogue.
+- Unknown product id returns **HTTP 200 with an empty body**, not 404: the provider maps it to `ProductNotFoundException`.
+- Categories contain spaces and apostrophes (`men's clothing`) and one is misspelt in the source (`jewelery`): slugs are derived by the mapper and category names are URL-encoded when calling upstream.
+- `price` is a float: converted to integer cents in the mapper.
 
 ## Caching
-`CachingProductProvider` wraps the real provider: fresh TTL 10 min, stale copy 24 h served only when upstream fails. Atomic lock to prevent stampedes. `Cache-Control: public, max-age=60` on GET endpoints. Enquiries are never cached.
+`CachingProductProvider` wraps the real provider: fresh TTL 10 min, stale copy 24 h served only when upstream fails (and re-armed for 30 s so a dead upstream is not hammered). Atomic lock to prevent stampedes. Values are cached as **plain arrays**, not objects: `cache.serializable_classes` is disabled, so cached objects come back as `__PHP_Incomplete_Class` (verified). `Cache-Control: public, max-age=60` on successful GET endpoints. Enquiries are never cached.
 
 ## Out of scope / cut (see DECISIONS.md for reasoning)
 Auth, admin UI, cart/checkout, IaC, Playwright E2E, customer confirmation email, category pagination.

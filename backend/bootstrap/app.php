@@ -1,5 +1,10 @@
 <?php
 
+use App\Exceptions\ApiErrorResponder;
+use App\Exceptions\CategoryNotFoundException;
+use App\Exceptions\ProductNotFoundException;
+use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\PublicCache;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,9 +22,14 @@ return Application::configure(basePath: dirname(__DIR__))
         if ($proxies !== []) {
             $middleware->trustProxies(at: in_array('*', $proxies, true) ? '*' : $proxies);
         }
+
+        $middleware->prepend(AssignRequestId::class);
+        $middleware->alias(['cache.public' => PublicCache::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+        $exceptions->dontReport([ProductNotFoundException::class, CategoryNotFoundException::class]);
+        $exceptions->render(new ApiErrorResponder);
     })->create();
