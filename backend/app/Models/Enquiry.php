@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @property string $id
+ * @property EnquiryStatus $status
+ * @property string|null $failure_reason
+ *
  * A customer enquiry. Product title and price are snapshots, so later catalogue changes
  * never rewrite what the customer actually asked about.
  */

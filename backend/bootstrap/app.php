@@ -17,12 +17,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Behind the gateway the real client IP arrives via X-Forwarded-For; trust only configured proxies.
-        $proxies = array_values(array_filter(array_map('trim', explode(',', (string) env('TRUSTED_PROXIES', '')))));
-        if ($proxies !== []) {
-            $middleware->trustProxies(at: in_array('*', $proxies, true) ? '*' : $proxies);
-        }
-
         $middleware->prepend(AssignRequestId::class);
         $middleware->alias(['cache.public' => PublicCache::class]);
     })

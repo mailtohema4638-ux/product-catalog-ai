@@ -24,6 +24,8 @@ jobs:
       - run: composer install --no-interaction --prefer-dist --no-progress
       - name: Code style (Pint)
         run: vendor/bin/pint --test
+      - name: Static analysis (Larastan, level 6)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
       - name: Tests (Pest)
         run: vendor/bin/pest
       - name: Dependency audit
@@ -48,3 +50,46 @@ jobs:
       - run: npm run build
       - name: Dependency audit
         run: npm audit --omit=dev --audit-level=high
+
+  # Builds the real images and exercises the stack end to end: gateway, SPA, API, live product
+  # source, enquiry and the email arriving in Mailpit. Needs outbound access to fakestoreapi.com.
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start the stack
+        run: docker compose up -d --build --wait
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          base=http://localhost:8080
+          curl() { command curl -fsS --retry 5 --retry-all-errors --retry-delay 3 "$@"; }
+
+          echo "SPA is served";           curl "$base/" | grep -q "Product Catalogue"
+          echo "API health via gateway";  curl "$base/api/v1/health" | jq -e '.data.status == "ok"'
+          echo "Home: 5 featured";        curl "$base/api/v1/featured" | jq -e '.data | length == 5'
+          echo "Search";                  curl "$base/api/v1/products?q=gold" | jq -e '.data | length > 0'
+          echo "Unknown product is 404";  test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/api/v1/products/999999")" = 404
+          echo "Client-side route falls back to the SPA"; curl "$base/products/12" | grep -q "Product Catalogue"
+          echo "Internal front controller is not exposed"; test "$(command curl -s -o /dev/null -w '%{http_code}' "$base/index.php")" != 200
+          echo "Security headers";        command curl -sI "$base/" | grep -qi '^content-security-policy:'
+
+          echo "Enquiry is accepted"
+          curl -X POST "$base/api/v1/enquiries" -H 'Content-Type: application/json' \
+            -d '{"product_id":"12","name":"CI Bot","email":"ci@example.com","message":"smoke test"}' \
+            | jq -e '.data.reference | length > 0'
+
+          echo "Sales email arrives in Mailpit"
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            total=$(curl http://localhost:8025/api/v1/messages | jq '.total')
+            [ "$total" = "1" ] && break
+            sleep 2
+          done
+          curl http://localhost:8025/api/v1/messages | jq -e '.messages[0].Subject | startswith("New enquiry")'
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

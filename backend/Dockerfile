@@ -13,6 +13,8 @@ WORKDIR /var/www/html
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
+# Never trust host-built manifests: they may list dev-only providers that are not installed here.
+RUN rm -f bootstrap/cache/*.php
 
 # /data holds the SQLite file on a volume; replace with a managed DB (RDS) in AWS.
 RUN composer dump-autoload --no-dev --optimize --no-scripts \

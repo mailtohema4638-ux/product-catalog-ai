@@ -59,7 +59,7 @@ Set `EMAIL_PROVIDER=mock` to run with no mail server at all.
 
 ## Tests and checks
 ```bash
-cd backend  && vendor/bin/pest && vendor/bin/pint --test
+cd backend  && vendor/bin/pest && vendor/bin/pint --test && vendor/bin/phpstan analyse
 cd frontend && npm test && npm run lint && npm run typecheck
 ```
 

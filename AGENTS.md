@@ -21,14 +21,14 @@ Read `docs/spec.md` first: it is the source of truth for scope and assumptions.
 10. All errors use the envelope `{ "error": { "code", "message", "details?", "request_id" } }`. Never expose stack traces or upstream error bodies.
 
 ## Security rules
-- No secrets in the repo. Configuration goes through `.env.example` + `config/*.php`; never call `env()` outside `config/` (the only exception is `bootstrap/app.php`).
+- No secrets in the repo. Configuration goes through `.env.example` + `config/*.php`; never call `env()` outside `config/` (it returns null once config is cached; Larastan enforces this).
 - The sales inbox address comes from config only, never from request input.
 - Frontend tests use MSW with `onUnhandledRequest: 'error'`: any request that is not mocked fails the test, which is also how we prove the browser only talks to `/api`.
 - Frontend: no `dangerouslySetInnerHTML`, no inline `style` attributes or inline scripts (the gateway CSP forbids them).
 - Treat upstream product data as untrusted.
 
 ## Commands
-- Backend (from `backend/`): `vendor/bin/pest`, `vendor/bin/pint --test` (use `vendor/bin/pint` to fix).
+- Backend (from `backend/`): `vendor/bin/pest`, `vendor/bin/pint --test` (use `vendor/bin/pint` to fix), `vendor/bin/phpstan analyse` (level 6).
 - Frontend (from `frontend/`): `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`.
 - Full stack: `docker compose up --build` then open http://localhost:8080 (Mailpit UI on :8025).
 

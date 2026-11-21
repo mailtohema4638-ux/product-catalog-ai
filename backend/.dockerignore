@@ -8,3 +8,8 @@ storage/framework/views/*
 storage/framework/sessions/*
 tests
 .phpunit.cache
+.env.*
+!.env.example
+bootstrap/cache/*.php
+database/*.sqlite*
+phpstan.neon
